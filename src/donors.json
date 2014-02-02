@@ -1,0 +1,9 @@
+{
+"Donors":[
+    {
+        "MainUrl" : "http://www.toysfest.ru",
+        "CurrentLink":"/product/65633/",
+        "ProductName" : ["text","div.container .product_page h1:nth-child(1)"]
+    }
+]
+}
