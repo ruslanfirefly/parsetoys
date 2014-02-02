@@ -3,7 +3,9 @@
     {
         "MainUrl" : "http://www.toysfest.ru",
         "CurrentLink":"/product/65633/",
-        "ProductName" : ["text","div.container .product_page h1:nth-child(1)"]
+        "ProductName" : ["text","div.container .product_page h1:nth-child(1)"],
+        "NewProduct" : ["src","div.container div.product a>img", "/tpl/icon/new.png"],
+        "HitProduct" : ["src","div.container div.product a>img", "/tpl/icon/hit.png"]
     }
 ]
 }

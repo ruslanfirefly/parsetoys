@@ -8,6 +8,7 @@ const (
 	COLLINK string = "visitedlinks"
 	COLTOYS string = "toysinfo"
 )
+
 func createMongoSession() *mgo.Session{
 	session, err := mgo.Dial(mongoURL)
 	error_log(err)
@@ -25,6 +26,7 @@ func dropOldLinks(){
 	}
 
 }
+
 func isNotInBase(donor Donor) bool{
 	s := createMongoSession()
 	defer s.Close()
@@ -36,6 +38,7 @@ func isNotInBase(donor Donor) bool{
 		return false
 	}
 }
+
 func addVisitedLinks(donor Donor){
 	s := createMongoSession()
 	defer s.Close()

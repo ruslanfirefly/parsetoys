@@ -1,29 +1,26 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	gq "github.com/PuerkitoBio/goquery"
-	_ "github.com/go-sql-driver/mysql"
 	"io/ioutil"
 	"log"
 	"flag"
 	"encoding/json"
 )
 
-const (
-	//SITE = "http://37.139.16.237"
-	SITE = "http://www.toysfest.ru"
-	DB   = "root:12345678@tcp(192.168.1.122:3306)/goparser"
-)
 type GlobalSet struct {
 	Donors []Donor `json:"Donors"`
 }
+
 type Donor struct {
 	MainUrl string `json:"MainUrl"`
 	CurrentLink string `json:"CurrentLink"`
 	ProductName []string `json:"ProductName"`
+	NewProduct []string  `json:"NewProduct"`
+	HitProduct []string  `json:"HitProduct"`
 }
+
 type Tovar struct {
 	NameProduct string
 	Action_acia string
@@ -35,6 +32,7 @@ type Tovar struct {
 	Descrip string
 	Pic []string
 }
+
 var (
 	settingsFile string
 	mongoURL string
@@ -43,11 +41,7 @@ var (
 
 
 func crawler(donor Donor) {
-	var (
-		doc *gq.Document
-		err error
-	)
-	doc, err = gq.NewDocument(donor.MainUrl + donor.CurrentLink)
+	doc, err := gq.NewDocument(donor.MainUrl + donor.CurrentLink)
 	error_log(err)
 	doc.Find("a").Each(func(i int, s *gq.Selection) {
 		donor.CurrentLink, _ = s.Attr("href")
@@ -63,10 +57,11 @@ func crawler(donor Donor) {
 		}
 	})
 }
+
 func getDataFromDOM(s *gq.Selection, arr []string) string{
 	var dt string
 	if(arr[0] == "text"){
-		dt = encode_string(s.Text())
+		dt = s.Text()
 	}else{
 		dt, _ = s.Attr(arr[0])
 	}
@@ -75,13 +70,24 @@ func getDataFromDOM(s *gq.Selection, arr []string) string{
 
 func getAndSaveTovarIfExist(doc *gq.Document, donor Donor){
 	var curTovar Tovar
-	doc.Find(donor.ProductName[0]).Each(func(i int, s *gq.Selection) {
+	doc.Find(donor.ProductName[1]).Each(func(i int, s *gq.Selection) {
 		curTovar.NameProduct = getDataFromDOM(s, donor.ProductName)
 	})
-	fmt.Printf("ТОВАР: %+v\n", curTovar.NameProduct)
+	doc.Find(donor.NewProduct[1]).Each(func(i int, s *gq.Selection) {
+		if(getDataFromDOM(s, donor.NewProduct) == donor.NewProduct[2]){
+			curTovar.Action_new = "1"
+		}
+	})
+	doc.Find(donor.HitProduct[1]).Each(func(i int, s *gq.Selection) {
+		if(getDataFromDOM(s, donor.HitProduct) == donor.HitProduct[2]){
+			curTovar.Action_acia = "1"
+		}
+	})
+	fmt.Printf("ТОВАР: %+v\n", curTovar.Action_acia)
+	fmt.Printf("ТОВАР2: %+v\n", curTovar.Action_new)
 }
 
-
+/*
 func get_full_info_product_2(id int, link string) {
 	var action_acia, action_new, price, art, pol, age, desc string = "none", "none", "none", "none", "none", "none", "none"
 	var pic string = "pic;"
@@ -149,10 +155,13 @@ func get_full_info_product_2(id int, link string) {
 	tx.Commit()
 	defer db.Close()
 }
+*/
+
 func init(){
 	flag.StringVar(&settingsFile, "setfile", "/data/donors.json", "Путь до файла настроек")
-	flag.StringVar(&mongoURL, "mdb","127.0.0.1:27017", "Путь до монги2")
+	flag.StringVar(&mongoURL, "mdb","127.0.0.1:27017", "Путь до монги")
 }
+
 func main() {
 	var gs GlobalSet
 	flag.Parse()
