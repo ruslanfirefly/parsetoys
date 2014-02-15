@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"flag"
 	"encoding/json"
+	"sync"
 )
 
 type GlobalSet struct {
@@ -44,6 +45,7 @@ type Tovar struct {
 var (
 	settingsFile string
 	mongoURL string
+	wg sync.WaitGroup
 )
 
 func crawler(donor Donor) {
@@ -51,8 +53,8 @@ func crawler(donor Donor) {
 	error_log(err)
 	doc.Find("a").Each(func(i int, s *gq.Selection) {
 		donor.CurrentLink, _ = s.Attr("href")
-		fmt.Println(donor.CurrentLink)
 		if (!inBaseDonor(donor)) {
+			fmt.Println(donor.CurrentLink)
 			addVisitedLinks(donor)
 			getAndSaveTovarIfExist(doc, donor)
 			if len(donor.CurrentLink) > 0 {
@@ -62,6 +64,7 @@ func crawler(donor Donor) {
 			}
 		}
 	})
+	wg.Done()
 }
 
 func getDataFromDOM(s *gq.Selection, arr []string, code string) string {
@@ -111,20 +114,20 @@ func getAndSaveTovarIfExist(doc *gq.Document, donor Donor) {
 	doc.Find(donor.Pictures[1]).Each(func(i int, s *gq.Selection) {
 		curTovar.Pic = append(curTovar.Pic, donor.MainUrl+getDataFromDOM(s, donor.Pictures, donor.Code))
 	})
-
-	fmt.Printf("Название: %+v\n", curTovar.NameProduct)
-	fmt.Printf("Новый: %+v\n", curTovar.Action_acia)
-	fmt.Printf("Хит: %+v\n", curTovar.Action_new)
-	fmt.Printf("Цена: %+v\n", curTovar.Price)
-	fmt.Printf("Артикул: %+v\n", curTovar.Art)
-	fmt.Printf("Пол: %+v\n", curTovar.Sex)
-	fmt.Printf("Возраст: %+v\n", curTovar.Age)
-	fmt.Printf("Описание: %+v\n", curTovar.Descrip)
-	fmt.Printf("Картинки: %+v\n", curTovar.Pic)
 	if (curTovar.Art != "") {
 		curTovar.Site = donor.MainUrl
 		curTovar.Link = donor.CurrentLink
-		saveTovar(curTovar)
+		fmt.Printf("Название: %+v\n", curTovar.NameProduct)
+		fmt.Printf("Новый: %+v\n", curTovar.Action_acia)
+		fmt.Printf("Хит: %+v\n", curTovar.Action_new)
+		fmt.Printf("Цена: %+v\n", curTovar.Price)
+		fmt.Printf("Артикул: %+v\n", curTovar.Art)
+		fmt.Printf("Пол: %+v\n", curTovar.Sex)
+		fmt.Printf("Возраст: %+v\n", curTovar.Age)
+		fmt.Printf("Описание: %+v\n", curTovar.Descrip)
+		fmt.Printf("Картинки: %+v\n", curTovar.Pic)
+		wg.Add(1)
+		go saveTovar(curTovar)
 	}
 }
 
@@ -141,6 +144,8 @@ func main() {
 	err = json.Unmarshal(text, &gs)
 	error_log(err)
 	for _, v := range gs.Donors {
-		crawler(v)
+		wg.Add(1)
+		go crawler(v)
 	}
+	wg.Wait()
 }

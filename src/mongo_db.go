@@ -56,6 +56,7 @@ func addVisitedLinks(donor Donor){
 	err := s.DB(DBMNG).C(COLLINK).Insert(donor)
 	error_log(err)
 }
+
 func saveTovar(tovar Tovar){
 	var err error
 	s := createMongoSession()
@@ -66,4 +67,5 @@ func saveTovar(tovar Tovar){
 		err = s.DB(DBMNG).C(COLTOYS).Insert(tovar)
 	}
 	error_log(err)
+	wg.Done()
 }
