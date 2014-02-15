@@ -1,11 +1,18 @@
 {
-"Donors":[
-    {
-        "MainUrl" : "http://www.toysfest.ru",
-        "CurrentLink":"/product/65633/",
-        "ProductName" : ["text","div.container .product_page h1:nth-child(1)"],
-        "NewProduct" : ["src","div.container div.product a>img", "/tpl/icon/new.png"],
-        "HitProduct" : ["src","div.container div.product a>img", "/tpl/icon/hit.png"]
-    }
-]
+	"Donors": [
+		{
+			"Code":"windows-1251",
+			"MainUrl": "http://www.toysfest.ru",
+			"CurrentLink": "/product/65633/",
+			"ProductName": ["text", "div.container .product_page h1:nth-child(1)"],
+			"NewProduct": ["src", "div.container div.product a>img", "/tpl/icon/new.png"],
+			"HitProduct": ["src", "div.container div.product a>img", "/tpl/icon/hit.png"],
+			"Price": ["text","div.row.text_place div.fll.price strong span"],
+			"Articul":["text","div.row.text_place div.details div.row>div.row:nth-child(1) p"],
+			"Sex":["text","div.row.text_place div.details div.row>div.row:nth-child(2) p"],
+			"Age":["text","div.row.text_place div.details div.row>div.row:nth-child(3) p"],
+			"Description":["text","div.info.withoutLeftPadding p"],
+			"Pictures":["src","div.gallery_place div.big_img img"]
+		}
+	]
 }
