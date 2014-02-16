@@ -7,6 +7,7 @@ import (
 	"flag"
 	"encoding/json"
 	"sync"
+	"github.com/ungerik/go-mail/email"
 )
 
 type GlobalSet struct {
@@ -46,6 +47,9 @@ var (
 	settingsFile string
 	mongoURL string
 	wg sync.WaitGroup
+	gmailAdress string
+	gmailPassword string
+	tomail string
 )
 
 func crawler(donor Donor) {
@@ -132,13 +136,21 @@ func getAndSaveTovarIfExist(doc *gq.Document, donor Donor) {
 }
 
 func init() {
-	flag.StringVar(&settingsFile, "setfile", "/data/donors.json", "Путь до файла настроек")
-	flag.StringVar(&mongoURL, "mdb", "127.0.0.1:27017", "Путь до монги")
+	flag.StringVar(&settingsFile, "setfile", "/data/donors.json", "File settings")
+	flag.StringVar(&mongoURL, "mdb", "127.0.0.1:27017", "Connect MongoDB")
+	flag.StringVar(&gmailAdress, "ugmail", "", "User gmail")
+	flag.StringVar(&gmailPassword, "pgmail", "", "Password gmail")
+	flag.StringVar(&tomail, "tomail", "", "mail to send info ")
 }
 
 func main() {
 	var gs GlobalSet
 	flag.Parse()
+
+	email.InitGmail(gmailAdress, gmailPassword)
+	letter := email.NewBriefMessage("Start parse", "start", tomail)
+	letter.Send()
+
 	dropOldLinks()
 	text, err := ioutil.ReadFile(settingsFile)
 	err = json.Unmarshal(text, &gs)
@@ -148,4 +160,6 @@ func main() {
 		go crawler(v)
 	}
 	wg.Wait()
+	letter = email.NewBriefMessage("End parse", "No errors", tomail)
+	letter.Send()
 }

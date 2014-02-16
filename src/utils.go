@@ -6,10 +6,14 @@ import (
 	"strings"
 	"io/ioutil"
 	"fmt"
+	"github.com/ungerik/go-mail/email"
 )
 
 func error_log(err error) {
 	if err != nil {
+		email.InitGmail(gmailAdress, gmailPassword)
+		letter := email.NewBriefMessage("Parse error", fmt.Sprint(err), tomail)
+		letter.Send()
 		log.Fatal(err)
 	}
 }
